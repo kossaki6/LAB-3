@@ -209,7 +209,6 @@ class EquationApp:
             self.ku_count_entry.insert(0, "1")
             self.generate_ku_equations()
 
-print("test")
 root = tk.Tk()
 app = EquationApp(root)
 root.mainloop()
