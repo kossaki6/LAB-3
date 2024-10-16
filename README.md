@@ -1,0 +1,1 @@
+# Mathematical model of a dynamic system with distributed parameters
