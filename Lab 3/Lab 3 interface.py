@@ -64,6 +64,7 @@ class EquationApp:
         # Кнопка збереження
         self.save_button = tk.Button(root, text="Зберегти в JSON", command=self.save_to_json)
         self.save_button.grid(row=10, column=1)
+        self.solve_button = tk.Button(root, text="Розв'язати", command=self.solve)
 
         # Завантаження попередніх даних
         self.load_from_json()
@@ -72,11 +73,15 @@ class EquationApp:
         self.y_label.grid_forget()
         self.y_entry.grid_forget()
         self.calculate_button.grid_forget()
+        self.save_button.grid_forget()
+        self.solve_button.grid(row=10, column=1)
 
     def problem_generation_mode(self):
         self.y_label.grid(row=4, column=0)
         self.y_entry.grid(row=4, column=1)
         self.calculate_button.grid(row=4, column=2)
+        self.save_button.grid(row=10, column=1)
+        self.solve_button.grid_forget()
 
     def generate_pu_equations(self):
         for widget in self.pu_frame.winfo_children():
@@ -225,6 +230,9 @@ class EquationApp:
             self.generate_pu_equations()
             self.ku_count_entry.insert(0, "1")
             self.generate_ku_equations()
+
+    def solve(self):
+        pass
 
 if __name__ == '__main__':
     root = tk.Tk()
