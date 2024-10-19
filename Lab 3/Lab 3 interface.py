@@ -74,12 +74,14 @@ class EquationApp:
         self.y_entry.grid_forget()
         self.calculate_button.grid_forget()
         self.save_button.grid_forget()
+        self.save_button.grid(row=10, column=0)
         self.solve_button.grid(row=10, column=1)
 
     def problem_generation_mode(self):
         self.y_label.grid(row=4, column=0)
         self.y_entry.grid(row=4, column=1)
         self.calculate_button.grid(row=4, column=2)
+        self.save_button.grid_forget()
         self.save_button.grid(row=10, column=1)
         self.solve_button.grid_forget()
 
