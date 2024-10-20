@@ -132,8 +132,11 @@ class EquationApp:
         # Символьні змінні для обчислень
         t, x1, x2 = sp.symbols('t x1 x2')
 
-        # Перетворюємо рядковий вираз у символьний
-        y = sp.sympify(y_expr)
+        try:
+            # Перетворюємо рядковий вираз у символьний
+            y = sp.sympify(y_expr)
+        except ValueError:
+            return
 
         # Обчислюємо другі похідні для u(s)
         d2y_dt2 = sp.diff(y, t, 2)
