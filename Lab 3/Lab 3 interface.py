@@ -2,16 +2,27 @@ import tkinter as tk
 from tkinter import ttk
 import json
 import sympy as sp
-
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 
 class EquationApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Формування умови")
 
+        # Додаємо обробник для закриття вікна
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
         # Встановлення шрифту за замовчуванням
         default_font = ("Arial", 14)  # Шрифт Arial, розмір 14
         self.root.option_add("*Font", default_font)
+
+        # Параметри
+        self.T = 10  # Кінцеве значення для t
+        self.t = 0  # Початкове значення для t
+        self.x1_constraints = [0,1]  # Обмеження для x1
+        self.x2_constraints = [0,1]  # Обмеження для x2
 
         tk.Label(root, text="Режими роботи:").grid(row=0, column=0)
         self.solve_mode_button = tk.Button(root, text="Розв'язування", command=self.solve_mode)
@@ -19,7 +30,7 @@ class EquationApp:
         self.solve_mode_button = tk.Button(root, text="Формування умови", command=self.problem_generation_mode)
         self.solve_mode_button.grid(row=0, column=2)
 
-        # Введення для обмежень x1, x2
+        # Введення для обмежень x1, x2, T
         tk.Label(root, text="Обмеження для x1:").grid(row=1, column=0)
         self.x1_constraints_entry = tk.Entry(root)
         self.x1_constraints_entry.grid(row=1, column=1)
@@ -31,6 +42,7 @@ class EquationApp:
         tk.Label(root, text="T:").grid(row=3, column=0)
         self.t_entry = tk.Entry(root)
         self.t_entry.grid(row=3, column=1)
+        self.t_entry.bind("<Return>", self.update_T)  # Оновлення T при натисканні Enter
 
         self.y_label = tk.Label(root, text="y(s):")
         self.y_label.grid(row=4, column=0)
@@ -70,6 +82,22 @@ class EquationApp:
         self.save_button.grid(row=10, column=1)
         self.solve_button = tk.Button(root, text="Розв'язати", command=self.solve)
 
+        # Графік y(s)
+        self.figure = plt.figure()
+        self.ax = self.figure.add_subplot(111, projection='3d')
+        self.canvas = FigureCanvasTkAgg(self.figure, master=root)
+        self.canvas.get_tk_widget().grid(row=0, column=3, rowspan=10)
+
+        # повзунок для зміни t
+        self.slider = ttk.Scale(root, from_=0, to=self.T, orient="horizontal", command=self.update_graph)
+        self.slider.grid(row=11, column=3, sticky="we")
+        tk.Label(root, text="Значення t:").grid(row=11, column=2)
+        self.T_slider = tk.Label(root, text=f"T: {self.T}")
+        self.T_slider.grid(row=11, column=4)
+
+        # Початковий графік
+        self.update_graph()
+
         # Завантаження попередніх даних
         self.load_from_json()
 
@@ -78,6 +106,8 @@ class EquationApp:
         self.y_entry.grid_forget()
         self.calculate_button.grid_forget()
         self.save_button.grid_forget()
+        self.slider.grid_forget()
+        self.canvas.get_tk_widget().grid_forget()
         self.save_button.grid(row=10, column=0)
         self.solve_button.grid(row=10, column=1)
 
@@ -85,6 +115,8 @@ class EquationApp:
         self.y_label.grid(row=4, column=0)
         self.y_entry.grid(row=4, column=1)
         self.calculate_button.grid(row=4, column=2)
+        self.slider.grid(row=11, column=3, sticky="we")
+        self.canvas.get_tk_widget().grid(row=0, column=3, rowspan=10)
         self.save_button.grid_forget()
         self.save_button.grid(row=10, column=1)
         self.solve_button.grid_forget()
@@ -182,6 +214,63 @@ class EquationApp:
             ku_expr.delete(0, tk.END)
             ku_expr.insert(0, str(ku_value))
 
+    def update_T(self, event=None):
+        # Оновлення значення T
+        try:
+            self.T = float(self.t_entry.get())
+        except ValueError:
+            self.T = 10  # Значення за замовчуванням, якщо введено некоректно
+
+        self.T_slider.config(text=f"T: {self.T}")
+        # Оновлення меж повзунка
+        self.slider.config(to=self.T)
+        self.update_graph()
+
+    def update_graph(self, event=None):
+        # Оновлення значення t
+        self.t = self.slider.get()
+
+        # Символьні змінні для обчислень
+        t, x1, x2 = sp.symbols('t x1 x2')
+        # Отримуємо вираз для y(s)
+        y_expr = self.y_entry.get()
+
+        try:
+            # Перетворюємо рядковий вираз у символьний
+            y = sp.sympify(y_expr)
+        except ValueError:
+            return
+
+        # Отримання меж для x1 і x2
+        try:
+            self.x1_constraints[0], self.x1_constraints[1] = map(float, self.x1_constraints_entry.get().split(' '))
+            self.x2_constraints[0], self.x2_constraints[1] = map(float, self.x2_constraints_entry.get().split(' '))
+        except ValueError:
+            # Якщо не вдалося перетворити, використати стандартні значення
+            self.x1_constraints = [0, 1]
+            self.x2_constraints = [0, 1]
+
+        # Генерація даних для графіку
+        x1_values = np.linspace(self.x1_constraints[0], self.x1_constraints[1], 15)
+        x2_values = np.linspace(self.x2_constraints[0], self.x2_constraints[1], 15)
+        x1_grid, x2_grid = np.meshgrid(x1_values, x2_values)
+
+        # Перетворення символьного виразу в числову функцію
+        y_func = sp.lambdify((x1, x2, t), y_expr, 'numpy')
+
+        y_values = y_func(x1_grid, x2_grid, self.t)
+
+        # Оновлення графіку
+        self.ax.clear()
+        self.ax.plot_surface(x1_grid, x2_grid, y_values, cmap='viridis')
+        self.ax.set_title(f"Графік функції y(x1, x2), t={self.t:.2f}")
+        self.ax.set_xlabel("x1")
+        self.ax.set_ylabel("x2")
+        self.ax.set_zlabel("y")
+
+        # Оновлення відображення
+        self.canvas.draw()
+
     def save_to_json(self):
         data = {
             'x1_constraints': self.x1_constraints_entry.get(),
@@ -242,6 +331,11 @@ class EquationApp:
 
     def solve(self):
         pass
+
+    def on_closing(self):
+        # Завершення роботи програми
+        plt.close('all')  # Закрити всі фігури matplotlib
+        self.root.destroy()  # Знищити головне вікно
 
 if __name__ == '__main__':
     root = tk.Tk()
