@@ -91,7 +91,8 @@ class EquationApp:
         # повзунок для зміни t
         self.slider = ttk.Scale(root, from_=0, to=self.T, orient="horizontal", command=self.update_graph)
         self.slider.grid(row=11, column=3, sticky="we")
-        tk.Label(root, text="Значення t:").grid(row=11, column=2)
+        self.t_slider = tk.Label(root, text="Значення t:")
+        self.t_slider.grid(row=11, column=2)
         self.T_slider = tk.Label(root, text=f"T: {self.T}")
         self.T_slider.grid(row=11, column=4)
 
@@ -102,14 +103,18 @@ class EquationApp:
         self.load_from_json()
 
     def solve_mode(self):
+        self.save_button.grid(row=10, column=0)
+        self.solve_button.grid(row=10, column=1)
+
         self.y_label.grid_forget()
         self.y_entry.grid_forget()
         self.calculate_button.grid_forget()
         self.save_button.grid_forget()
         self.slider.grid_forget()
         self.canvas.get_tk_widget().grid_forget()
-        self.save_button.grid(row=10, column=0)
-        self.solve_button.grid(row=10, column=1)
+        self.T_slider.grid_forget()
+        self.t_slider.grid_forget()
+
 
     def problem_generation_mode(self):
         self.y_label.grid(row=4, column=0)
@@ -117,8 +122,10 @@ class EquationApp:
         self.calculate_button.grid(row=4, column=2)
         self.slider.grid(row=11, column=3, sticky="we")
         self.canvas.get_tk_widget().grid(row=0, column=3, rowspan=10)
-        self.save_button.grid_forget()
+        self.T_slider.grid(row=11, column=4)
+        self.t_slider.grid(row=11, column=2)
         self.save_button.grid(row=10, column=1)
+
         self.solve_button.grid_forget()
 
     def generate_pu_equations(self):
