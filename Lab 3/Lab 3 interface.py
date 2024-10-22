@@ -9,6 +9,10 @@ class EquationApp:
         self.root = root
         self.root.title("Формування умови")
 
+        # Встановлення шрифту за замовчуванням
+        default_font = ("Arial", 14)  # Шрифт Arial, розмір 14
+        self.root.option_add("*Font", default_font)
+
         tk.Label(root, text="Режими роботи:").grid(row=0, column=0)
         self.solve_mode_button = tk.Button(root, text="Розв'язування", command=self.solve_mode)
         self.solve_mode_button.grid(row=0, column=1)
