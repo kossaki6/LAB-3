@@ -96,11 +96,12 @@ class EquationApp:
         self.T_slider = tk.Label(root, text=f"T: {self.T}")
         self.T_slider.grid(row=11, column=4)
 
+        # Завантаження попередніх даних
+        self.load_from_json()
+
         # Початковий графік
         self.update_graph()
 
-        # Завантаження попередніх даних
-        self.load_from_json()
 
     def solve_mode(self):
         self.save_button.grid(row=10, column=0)
