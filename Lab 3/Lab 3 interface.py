@@ -114,27 +114,39 @@ class EquationApp:
 
         # Додаємо обробник натискань миші на графік
         self.canvas.mpl_connect("button_press_event", self.on_click)
-
+        # Кнопка очистки точок
         self.clean_button = tk.Button(root, text="Очистити", command=self.clean_points)
+
+        # Список точок (Listbox)
+        self.points_listbox = tk.Listbox(root, height=15, width=30)
+
+        # Кнопки для редагування та видалення точок
+        self.edit_button = tk.Button(root, text="Редагувати точку", command=self.edit_point)
+
+        self.delete_button = tk.Button(root, text="Видалити точку", command=self.delete_point)
 
         # Завантаження попередніх даних
         self.load_from_json()
 
-        # Початковий графік
+
         self.update_graph()
         self.update_graph_from_points()
+        self.update_points_listbox()
 
 
     def solve_mode(self):
-        self.save_button.grid(row=10, column=0)
+        self.save_button.grid(row=10, column=2)
         self.solve_button.grid(row=10, column=1)
         self.clean_button.grid(row=10, column=3)
+        self.delete_button.grid(row=10, column=4)
+        self.edit_button.grid(row=9, column=4)
         self.canvas_points.get_tk_widget().grid(row=0, column=3, rowspan=10)
+        self.points_listbox.grid(row=1, column=4, rowspan=8)
+
 
         self.y_label.grid_forget()
         self.y_entry.grid_forget()
         self.calculate_button.grid_forget()
-        self.save_button.grid_forget()
         self.slider.grid_forget()
         self.canvas.get_tk_widget().grid_forget()
         self.T_slider.grid_forget()
@@ -153,7 +165,10 @@ class EquationApp:
 
         self.solve_button.grid_forget()
         self.clean_button.grid_forget()
+        self.delete_button.grid_forget()
+        self.edit_button.grid_forget()
         self.canvas_points.get_tk_widget().grid_forget()
+        self.points_listbox.grid_forget()
 
     def generate_pu_equations(self):
         for widget in self.pu_frame.winfo_children():
@@ -323,22 +338,76 @@ class EquationApp:
 
         x, y = event.xdata, event.ydata
         self.points.append((x, y))
+        self.update_points_listbox()  # Оновлюємо список точок у Listbox
 
         # Відображення точки на графіку
         self.ax_points.plot(x, y, 'ro')  # 'ro' - червона точка
         self.canvas_points.draw()
 
     def update_graph_from_points(self, event=None):
-        # Очищення графіку та точок
+        """Очищає та перемальовує точки на графіку."""
         self.ax_points.clear()
-        for x, y in self.points:
-            self.ax_points.plot(x, y, 'ro')  # 'ro' - червона точка
-
         self.ax_points.set_xlim(self.x1_constraints)
         self.ax_points.set_ylim(self.x2_constraints)
+        self.ax_points.set_title("Графік для створення точок")
+        self.ax_points.set_xlabel("x1")
+        self.ax_points.set_ylabel("x2")
 
-        # Оновлення відображення
+        # Додаємо всі точки з self.points заново
+        for x, y in self.points:
+            self.ax_points.plot(x, y, 'ro')
         self.canvas_points.draw()
+
+    def update_points_listbox(self):
+        """Оновлює список точок у Listbox."""
+        self.points_listbox.delete(0, tk.END)
+        for i, (x, y) in enumerate(self.points):
+            self.points_listbox.insert(tk.END, f"{i + 1}: ({x:.2f}, {y:.2f})")
+
+    def edit_point(self):
+        """Редагування обраної точки."""
+        selected_index = self.points_listbox.curselection()
+        if not selected_index:
+            return
+
+        index = selected_index[0]
+        x, y = self.points[index]
+
+        # Вікно для введення нових значень
+        edit_window = tk.Toplevel(self.root)
+        edit_window.title("Редагувати точку")
+
+        tk.Label(edit_window, text="x:").grid(row=0, column=0)
+        x_entry = tk.Entry(edit_window)
+        x_entry.grid(row=0, column=1)
+        x_entry.insert(0, f"{x:.2f}")
+
+        tk.Label(edit_window, text="y:").grid(row=1, column=0)
+        y_entry = tk.Entry(edit_window)
+        y_entry.grid(row=1, column=1)
+        y_entry.insert(0, f"{y:.2f}")
+
+        def save_edit():
+            """Зберегти зміни точки."""
+            new_x = float(x_entry.get())
+            new_y = float(y_entry.get())
+            self.points[index] = (new_x, new_y)
+            self.update_points_listbox()  # Оновлення списку точок
+            self.update_graph_from_points()    # Оновлення графіка
+            edit_window.destroy()
+
+        tk.Button(edit_window, text="Зберегти", command=save_edit).grid(row=2, columnspan=2)
+
+    def delete_point(self):
+        """Видаляє обрану точку зі списку і графіка."""
+        selected_index = self.points_listbox.curselection()
+        if not selected_index:
+            return
+
+        index = selected_index[0]
+        del self.points[index]
+        self.update_points_listbox()  # Оновлюємо список точок
+        self.update_graph_from_points()  # Оновлення графіка
 
     def save_to_json(self):
         data = {
@@ -349,7 +418,7 @@ class EquationApp:
             'u(s)': self.u_entry.get(),
             'pu_equations': [(pu_type.get(), pu_expr.get()) for pu_type, pu_expr in self.pu_equations],
             'ku_equations': [(ku_type.get(), ku_expr.get()) for ku_type, ku_expr in self.ku_equations],
-            'points': self.points  # Додаємо координати точок у JSON
+            'points': self.points
         }
 
         with open('equations.json', 'w') as f:
