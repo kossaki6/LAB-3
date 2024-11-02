@@ -23,6 +23,7 @@ class EquationApp:
         self.t = 0  # Початкове значення для t
         self.x1_constraints = [0,1]  # Обмеження для x1
         self.x2_constraints = [0,1]  # Обмеження для x2
+        self.points = [] # Точки дискретизацій
 
         tk.Label(root, text="Режими роботи:").grid(row=0, column=0)
         self.solve_mode_button = tk.Button(root, text="Розв'язування", command=self.solve_mode)
@@ -34,10 +35,12 @@ class EquationApp:
         tk.Label(root, text="Обмеження для x1:").grid(row=1, column=0)
         self.x1_constraints_entry = tk.Entry(root)
         self.x1_constraints_entry.grid(row=1, column=1)
+        self.x1_constraints_entry.bind("<Return>", self.update_constraints)  # Оновлення обмеження
 
         tk.Label(root, text="Обмеження для x2:").grid(row=2, column=0)
         self.x2_constraints_entry = tk.Entry(root)
         self.x2_constraints_entry.grid(row=2, column=1)
+        self.x2_constraints_entry.bind("<Return>", self.update_constraints)  # Оновлення обмеження
 
         tk.Label(root, text="T:").grid(row=3, column=0)
         self.t_entry = tk.Entry(root)
@@ -96,16 +99,37 @@ class EquationApp:
         self.T_slider = tk.Label(root, text=f"T: {self.T}")
         self.T_slider.grid(row=11, column=4)
 
+        # Графік для точок дискретизації
+        self.figure_points = plt.Figure(figsize=(5, 4))
+        self.ax_points = self.figure_points.add_subplot(111)
+        self.ax_points.set_title("Графік для створення точок")
+        self.ax_points.set_xlim(self.x1_constraints)
+        self.ax_points.set_ylim(self.x2_constraints)
+        self.ax_points.set_xlabel("x1")
+        self.ax_points.set_ylabel("x2")
+
+        # Полотно для графіка точок
+        self.canvas_points = FigureCanvasTkAgg(self.figure_points, master=root)
+        self.canvas_points.mpl_connect("button_press_event", self.on_click)
+
+        # Додаємо обробник натискань миші на графік
+        self.canvas.mpl_connect("button_press_event", self.on_click)
+
+        self.clean_button = tk.Button(root, text="Очистити", command=self.clean_points)
+
         # Завантаження попередніх даних
         self.load_from_json()
 
         # Початковий графік
         self.update_graph()
+        self.update_graph_from_points()
 
 
     def solve_mode(self):
         self.save_button.grid(row=10, column=0)
         self.solve_button.grid(row=10, column=1)
+        self.clean_button.grid(row=10, column=3)
+        self.canvas_points.get_tk_widget().grid(row=0, column=3, rowspan=10)
 
         self.y_label.grid_forget()
         self.y_entry.grid_forget()
@@ -128,6 +152,8 @@ class EquationApp:
         self.save_button.grid(row=10, column=1)
 
         self.solve_button.grid_forget()
+        self.clean_button.grid_forget()
+        self.canvas_points.get_tk_widget().grid_forget()
 
     def generate_pu_equations(self):
         for widget in self.pu_frame.winfo_children():
@@ -234,6 +260,17 @@ class EquationApp:
         self.slider.config(to=self.T)
         self.update_graph()
 
+    def update_constraints(self,event=None):
+        try:
+            self.x1_constraints[0], self.x1_constraints[1] = map(float, self.x1_constraints_entry.get().split(' '))
+            self.x2_constraints[0], self.x2_constraints[1] = map(float, self.x2_constraints_entry.get().split(' '))
+        except ValueError:
+            # Якщо не вдалося перетворити, використати стандартні значення
+            self.x1_constraints = [0, 1]
+            self.x2_constraints = [0, 1]
+
+        self.update_graph_from_points()
+
     def update_graph(self, event=None):
         # Оновлення значення t
         self.t = self.slider.get()
@@ -279,6 +316,30 @@ class EquationApp:
         # Оновлення відображення
         self.canvas.draw()
 
+    def on_click(self, event=None):
+        """Обробка події натиску на графіку для створення точок."""
+        if event.inaxes != self.ax_points:  # Перевірка, чи натискання графіку
+            return
+
+        x, y = event.xdata, event.ydata
+        self.points.append((x, y))
+
+        # Відображення точки на графіку
+        self.ax_points.plot(x, y, 'ro')  # 'ro' - червона точка
+        self.canvas_points.draw()
+
+    def update_graph_from_points(self, event=None):
+        # Очищення графіку та точок
+        self.ax_points.clear()
+        for x, y in self.points:
+            self.ax_points.plot(x, y, 'ro')  # 'ro' - червона точка
+
+        self.ax_points.set_xlim(self.x1_constraints)
+        self.ax_points.set_ylim(self.x2_constraints)
+
+        # Оновлення відображення
+        self.canvas_points.draw()
+
     def save_to_json(self):
         data = {
             'x1_constraints': self.x1_constraints_entry.get(),
@@ -288,6 +349,7 @@ class EquationApp:
             'u(s)': self.u_entry.get(),
             'pu_equations': [(pu_type.get(), pu_expr.get()) for pu_type, pu_expr in self.pu_equations],
             'ku_equations': [(ku_type.get(), ku_expr.get()) for ku_type, ku_expr in self.ku_equations],
+            'points': self.points  # Додаємо координати точок у JSON
         }
 
         with open('equations.json', 'w') as f:
@@ -303,6 +365,7 @@ class EquationApp:
             self.t_entry.insert(0, data.get('T', ''))
             self.y_entry.insert(0, data.get('y(s)', ''))
             self.u_entry.insert(0, data.get('u(s)', ''))
+            self.points = data.get('points', [])  # Завантаження точок у JSON
 
             # Завантаження ПУ
             pu_equations = data.get('pu_equations', [])
@@ -336,6 +399,14 @@ class EquationApp:
             self.generate_pu_equations()
             self.ku_count_entry.insert(0, "1")
             self.generate_ku_equations()
+
+    def clean_points(self):
+        self.points = []
+        self.ax_points.clear()
+        self.ax_points.set_xlim(self.x1_constraints)
+        self.ax_points.set_ylim(self.x2_constraints)
+
+        self.canvas_points.draw()
 
     def solve(self):
         pass
