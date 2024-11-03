@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
 import json
 import sympy as sp
 import matplotlib.pyplot as plt
@@ -17,6 +18,10 @@ class EquationApp:
         # Встановлення шрифту за замовчуванням
         default_font = ("Arial", 14)  # Шрифт Arial, розмір 14
         self.root.option_add("*Font", default_font)
+
+        # Завантаження зображень формул
+        self.formula1_image = ImageTk.PhotoImage(Image.open("formula1.png"))
+        self.formula2_image = ImageTk.PhotoImage(Image.open("formula2.png"))
 
         # Параметри
         self.T = 10  # Кінцеве значення для t
@@ -51,6 +56,11 @@ class EquationApp:
         self.y_label.grid(row=4, column=0)
         self.y_entry = tk.Entry(root)
         self.y_entry.grid(row=4, column=1)
+
+        # Вибір функції G
+        self.G = "2"
+        self.btn_formula1 = tk.Button(root, image=self.formula1_image, command=self.select_formula1)
+        self.btn_formula2 = tk.Button(root, image=self.formula2_image, command=self.select_formula2)
 
         # Кнопка обчислення виразу для u(s)
         self.calculate_button = tk.Button(root, text="Обчислити u(s)", command=self.calculate_u)
@@ -128,6 +138,11 @@ class EquationApp:
         # Завантаження попередніх даних
         self.load_from_json()
 
+        # підсвітка вибраного G
+        if self.G == "1":
+            self.select_formula1()
+        elif self.G == "2":
+            self.select_formula2()
 
         self.update_graph()
         self.update_graph_from_points()
@@ -142,6 +157,8 @@ class EquationApp:
         self.edit_button.grid(row=9, column=4)
         self.canvas_points.get_tk_widget().grid(row=0, column=3, rowspan=10)
         self.points_listbox.grid(row=1, column=4, rowspan=8)
+        self.btn_formula1.grid(row=4, column=1)
+        self.btn_formula2.grid(row=4, column=2)
 
 
         self.y_label.grid_forget()
@@ -169,6 +186,8 @@ class EquationApp:
         self.edit_button.grid_forget()
         self.canvas_points.get_tk_widget().grid_forget()
         self.points_listbox.grid_forget()
+        self.btn_formula1.grid_forget()
+        self.btn_formula2.grid_forget()
 
     def generate_pu_equations(self):
         for widget in self.pu_frame.winfo_children():
@@ -209,6 +228,18 @@ class EquationApp:
             ku_expression = tk.Entry(self.ku_frame)
             ku_expression.grid(row=i, column=2)
             self.ku_equations.append((ku_type, ku_expression))
+
+    def select_formula1(self):
+        # Функція при натискані на першу формулу G
+        self.G = "1"
+        self.btn_formula1.config(bg="black")
+        self.btn_formula2.config(bg="white")
+
+    def select_formula2(self):
+        # Функція при натискані на другу формулу G
+        self.G = "2"
+        self.btn_formula1.config(bg="white")
+        self.btn_formula2.config(bg="black")
 
     def calculate_u(self):
         # Отримуємо вираз для y(s)
@@ -415,6 +446,7 @@ class EquationApp:
             'x2_constraints': self.x2_constraints_entry.get(),
             'T': self.t_entry.get(),
             'y(s)': self.y_entry.get(),
+            'G(s)': self.G,
             'u(s)': self.u_entry.get(),
             'pu_equations': [(pu_type.get(), pu_expr.get()) for pu_type, pu_expr in self.pu_equations],
             'ku_equations': [(ku_type.get(), ku_expr.get()) for ku_type, ku_expr in self.ku_equations],
@@ -433,6 +465,7 @@ class EquationApp:
             self.x2_constraints_entry.insert(0, data.get('x2_constraints', ''))
             self.t_entry.insert(0, data.get('T', ''))
             self.y_entry.insert(0, data.get('y(s)', ''))
+            self.G = data.get('G(s)', '')
             self.u_entry.insert(0, data.get('u(s)', ''))
             self.points = data.get('points', [])  # Завантаження точок у JSON
 
