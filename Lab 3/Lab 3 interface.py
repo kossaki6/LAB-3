@@ -61,6 +61,8 @@ class EquationApp:
         self.G = "2"
         self.btn_formula1 = tk.Button(root, image=self.formula1_image, command=self.select_formula1)
         self.btn_formula2 = tk.Button(root, image=self.formula2_image, command=self.select_formula2)
+        self.btn_formula1.grid(row=10, column=1)
+        self.btn_formula2.grid(row=10, column=2)
 
         # Кнопка обчислення виразу для u(s)
         self.calculate_button = tk.Button(root, text="Обчислити u(s)", command=self.calculate_u)
@@ -92,7 +94,7 @@ class EquationApp:
 
         # Кнопка збереження
         self.save_button = tk.Button(root, text="Зберегти в JSON", command=self.save_to_json)
-        self.save_button.grid(row=10, column=1)
+        self.save_button.grid(row=11, column=1)
         self.solve_button = tk.Button(root, text="Розв'язати", command=self.solve)
 
         # Графік y(s)
@@ -150,6 +152,14 @@ class EquationApp:
 
 
     def solve_mode(self):
+        self.y_label.grid_forget()
+        self.y_entry.grid_forget()
+        self.calculate_button.grid_forget()
+        self.slider.grid_forget()
+        self.canvas.get_tk_widget().grid_forget()
+        self.T_slider.grid_forget()
+        self.t_slider.grid_forget()
+
         self.save_button.grid(row=10, column=2)
         self.solve_button.grid(row=10, column=1)
         self.clean_button.grid(row=10, column=3)
@@ -161,25 +171,7 @@ class EquationApp:
         self.btn_formula2.grid(row=4, column=2)
 
 
-        self.y_label.grid_forget()
-        self.y_entry.grid_forget()
-        self.calculate_button.grid_forget()
-        self.slider.grid_forget()
-        self.canvas.get_tk_widget().grid_forget()
-        self.T_slider.grid_forget()
-        self.t_slider.grid_forget()
-
-
     def problem_generation_mode(self):
-        self.y_label.grid(row=4, column=0)
-        self.y_entry.grid(row=4, column=1)
-        self.calculate_button.grid(row=4, column=2)
-        self.slider.grid(row=11, column=3, sticky="we")
-        self.canvas.get_tk_widget().grid(row=0, column=3, rowspan=10)
-        self.T_slider.grid(row=11, column=4)
-        self.t_slider.grid(row=11, column=2)
-        self.save_button.grid(row=10, column=1)
-
         self.solve_button.grid_forget()
         self.clean_button.grid_forget()
         self.delete_button.grid_forget()
@@ -188,6 +180,17 @@ class EquationApp:
         self.points_listbox.grid_forget()
         self.btn_formula1.grid_forget()
         self.btn_formula2.grid_forget()
+
+        self.y_label.grid(row=4, column=0)
+        self.y_entry.grid(row=4, column=1)
+        self.calculate_button.grid(row=4, column=2)
+        self.slider.grid(row=11, column=3, sticky="we")
+        self.canvas.get_tk_widget().grid(row=0, column=3, rowspan=10)
+        self.T_slider.grid(row=11, column=4)
+        self.t_slider.grid(row=11, column=2)
+        self.save_button.grid(row=11, column=1)
+        self.btn_formula1.grid(row=10, column=1)
+        self.btn_formula2.grid(row=10, column=2)
 
     def generate_pu_equations(self):
         for widget in self.pu_frame.winfo_children():
