@@ -31,6 +31,7 @@ class EquationApp:
         self.x1_constraints = [0,1]  # Обмеження для x1
         self.x2_constraints = [0,1]  # Обмеження для x2
         self.points = [] # Точки дискретизацій
+        self.k = 1 #зміна на вибір для L1 для першого варіанту
 
         tk.Label(root, text="Режими роботи:").grid(row=0, column=0)
         self.solve_mode_button = tk.Button(root, text="Розв'язування", command=self.solve_mode)
@@ -270,20 +271,27 @@ class EquationApp:
 
         # Символьні змінні для обчислень
         t, x1, x2 = sp.symbols('t x1 x2')
-
         try:
             # Перетворюємо рядковий вираз у символьний
             y = sp.sympify(y_expr)
         except ValueError:
             return
 
-        # Обчислюємо другі похідні для u(s)
-        d2y_dt2 = sp.diff(y, t, 2)
-        d2y_dx1_2 = sp.diff(y, x1, 2)
-        d2y_dx2_2 = sp.diff(y, x2, 2)
+        if self.G == "1":
+            # Обчислюємо другі похідні для u(s)
+            d2y_dt2 = sp.diff(y, t, 2)
+            d2y_dx1_2 = sp.diff(y, x1, 2)
+            d2y_dx2_2 = sp.diff(y, x2, 2)
 
-        # Вираз для u(s)
-        u_expr = d2y_dt2 - d2y_dx1_2 - d2y_dx2_2
+            # Вираз для u(s)
+            u_expr = d2y_dt2 - d2y_dx1_2 - d2y_dx2_2
+        elif self.G == '2':
+            y_dt = sp.diff(y, t)
+            d2y_dx1_2 = sp.diff(y, x1, 2)
+            d2y_dx2_2 = sp.diff(y, x2, 2)
+
+            # Вираз для u(s)
+            u_expr = y_dt - self.k * (d2y_dx1_2 - d2y_dx2_2)
 
         # Виводимо результат у поле u(s)
         self.u_entry.delete(0, tk.END)
