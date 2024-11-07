@@ -22,6 +22,8 @@ class EquationApp:
         # Завантаження зображень формул
         self.formula1_image = ImageTk.PhotoImage(Image.open("formula1.png"))
         self.formula2_image = ImageTk.PhotoImage(Image.open("formula2.png"))
+        self.L1_image = ImageTk.PhotoImage(Image.open("L1.png"))
+        self.L2_image = ImageTk.PhotoImage(Image.open("L2.png"))
 
         # Параметри
         self.T = 10  # Кінцеве значення для t
@@ -63,6 +65,8 @@ class EquationApp:
         self.btn_formula2 = tk.Button(root, image=self.formula2_image, command=self.select_formula2)
         self.btn_formula1.grid(row=10, column=1)
         self.btn_formula2.grid(row=10, column=2)
+        self.L1 = tk.Label(root, image=self.L1_image)
+        self.L2 = tk.Label(root, image=self.L2_image)
 
         # Кнопка обчислення виразу для u(s)
         self.calculate_button = tk.Button(root, text="Обчислити u(s)", command=self.calculate_u)
@@ -143,8 +147,10 @@ class EquationApp:
         # підсвітка вибраного G
         if self.G == "1":
             self.select_formula1()
+            self.L1.grid(row=10, column=0)
         elif self.G == "2":
             self.select_formula2()
+            self.L2.grid(row=10, column=0)
 
         self.update_graph()
         self.update_graph_from_points()
@@ -169,6 +175,10 @@ class EquationApp:
         self.points_listbox.grid(row=1, column=4, rowspan=8)
         self.btn_formula1.grid(row=4, column=1)
         self.btn_formula2.grid(row=4, column=2)
+        if self.G == '1':
+            self.L1.grid(row=4, column=0)
+        elif self.G == '2':
+            self.L2.grid(row=4, column=0)
 
 
     def problem_generation_mode(self):
@@ -191,6 +201,10 @@ class EquationApp:
         self.save_button.grid(row=11, column=1)
         self.btn_formula1.grid(row=10, column=1)
         self.btn_formula2.grid(row=10, column=2)
+        if self.G == '1':
+            self.L1.grid(row=10, column=0)
+        elif self.G == '2':
+            self.L2.grid(row=10, column=0)
 
     def generate_pu_equations(self):
         for widget in self.pu_frame.winfo_children():
@@ -234,15 +248,21 @@ class EquationApp:
 
     def select_formula1(self):
         # Функція при натискані на першу формулу G
+        self.L2.grid_forget()
         self.G = "1"
         self.btn_formula1.config(bg="black")
         self.btn_formula2.config(bg="white")
+        grid_info = self.btn_formula1.grid_info()["row"]
+        self.L1.grid(row=grid_info, column=0)
 
     def select_formula2(self):
         # Функція при натискані на другу формулу G
+        self.L1.grid_forget()
         self.G = "2"
         self.btn_formula1.config(bg="white")
         self.btn_formula2.config(bg="black")
+        grid_info = self.btn_formula2.grid_info()["row"]
+        self.L2.grid(row=grid_info,column=0)
 
     def calculate_u(self):
         # Отримуємо вираз для y(s)
