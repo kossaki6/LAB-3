@@ -31,8 +31,6 @@ x1, x2, t = sp.symbols('x1 x2 t')
 # Extract functions and parameters
 y_expression = data.get('y(s)', '')
 u_expression = data.get('u(s)', '')
-u_discretization_points = int(data.get('u_discretization_points', 8))
-linspace_step = float(data.get('linspace_step', 0.5))
 
 # Extract initial conditions
 initial_conditions = data.get('initial_conds', [])
@@ -40,7 +38,6 @@ boundary_conditions = data.get('boundary_conds', [])
 
 print(f"x1_constraints: {x1_min, x1_max}, x2_constraints: {x2_min, x2_max}, T: {t_max}")
 print(f"y_expression: {y_expression}, u_expression: {u_expression}")
-print(f"u_discretization_points: {u_discretization_points}, linspace_step: {linspace_step}")
 print(f"Initial Conditions: {initial_conditions}")
 print(f"Boundary Conditions: {boundary_conditions}")
 
