@@ -543,6 +543,45 @@ class EquationApp:
         self.canvas_points.draw()
 
     def solve(self):
+        pu = [[pu_type.get(), pu_expr.get()] for pu_type, pu_expr in self.pu_equations]
+        ku = [[ku_type.get(), ku_expr.get()] for ku_type, ku_expr in self.ku_equations]
+
+        ic = []
+        for el in pu:
+            if el[0] == "похідна по t":
+                el[0] = "delta_t_1"
+            ic.append(
+                {
+                    "differential": el[0],
+                    "expression": el[1]
+                }
+            )
+
+        bc = []
+        i = 0
+        for el in ku:
+            if el[0] == "похідна по x1":
+                i += 1
+                el[0] = f"delta_x{i}_1"
+            bc.append(
+                {
+                    "differential": el[0],
+                    "expression": el[1]
+                }
+            )
+
+        with open("ideal_equations.json", 'w', encoding="UTF-8") as fout:
+            json.dump({
+                "x1_constraints": self.x1_constraints_entry.get(),
+                "x2_constraints": self.x2_constraints_entry.get(),
+                "T": self.t_entry.get(),
+                "y(s)": "t**2*x1 + x2**2",
+                "u(s)": self.u_entry.get(),
+                "initial_conds": ic,
+                "boundary_conds": bc
+            }, fout)
+
+        # Запуск розв'язувача та отримання графіка результату
         figure = plt.figure()
         Calculations(figure)
 
