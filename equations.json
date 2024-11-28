@@ -1,0 +1,59 @@
+{
+	"x1_constraints": "-2 2",
+	"x2_constraints": "-3 3",
+	"T": "6",
+	"y(s)": "-3*x1**2 + x2**2 * sin(t)",
+	"L": "delta_t_2 - delta_x1_2 - delta_x2_2",
+	"G(s)": "2",
+	"u(s)": "-x2**2 * sin(t) - 2 * sin(t) + 6",
+	
+	"initial_conds": [
+	  {
+		"differential": "delta_t_1",
+		"expression": "x2**2*cos(t)"
+	  },
+	  {
+		"differential": "delta_t_1",
+		"expression": "x2**2"
+	  }
+	],
+	
+	"boundary_conds": [
+	  {
+		"differential": "1",
+		"expression": "-3*x1**2 + x2**2 * sin(t)"
+	  },
+	  {
+		"differential": "1",
+		"expression": "-3*x1**2 + x2**2 * sin(t)"
+	  },
+	  {
+		"differential": "delta_x1_1",
+		"expression": "-6*x1"
+	  },
+	  {
+		"differential": "1",
+		"expression": "-3*x1**2 + x2**2 * sin(t)"
+	  },
+	  {
+		"differential": "delta_x1_1",
+		"expression": "-6*x1"
+	  }
+	],
+	
+	"u_0": [
+	  [-1.0, -1.0],
+	  [1.0, -1.0],
+	  [1.0, 1.0],
+	  [0.0, 0.0],
+	  [-1.0, 1.0]
+	],
+	
+	"u_g": [
+	  [-1.0, -1.0],
+	  [1.0, -1.0],
+	  [1.0, 1.0],
+	  [0.0, 0.0],
+	  [-1.0, 1.0]
+	]
+  }
