@@ -2,15 +2,59 @@ import sympy as sp
 import numpy as np
 
 #################################################################
-                        #TASK CONDITIONS#
+                #TASK CONDITIONS EXTRACTION#
 #################################################################
-# Define symbols
+import json
+
+def load_equations(file_path):
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+        print("Successfully loaded JSON data.")
+        return data
+    except FileNotFoundError:
+        print("File not found. Ensure the path is correct.")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+        return None
+
+# Load the data
+data = load_equations('ideal_equations.json')
+
+# Extract constraints
+x1_min, x1_max = list(map(float, data.get('x1_constraints', '-2 2').split()))
+x2_min, x2_max = list(map(float, data.get('x2_constraints', '-3 3').split()))
+t_min, t_max = 0, float(data.get('T', 1))
 x1, x2, t = sp.symbols('x1 x2 t')
-c = 10
-r = sp.sqrt(x1**2 + x2**2)
+
+# Extract functions and parameters
+y_expression = data.get('y(s)', '')
+u_expression = data.get('u(s)', '')
+u_discretization_points = int(data.get('u_discretization_points', 8))
+linspace_step = float(data.get('linspace_step', 0.5))
+
+# Extract initial conditions
+initial_conditions = data.get('initial_conds', [])
+boundary_conditions = data.get('boundary_conds', [])
+
+print(f"x1_constraints: {x1_min, x1_max}, x2_constraints: {x2_min, x2_max}, T: {t_max}")
+print(f"y_expression: {y_expression}, u_expression: {u_expression}")
+print(f"u_discretization_points: {u_discretization_points}, linspace_step: {linspace_step}")
+print(f"Initial Conditions: {initial_conditions}")
+print(f"Boundary Conditions: {boundary_conditions}")
+
+# Convert to SymPy expressions
+y = sp.sympify(y_expression)
+u = sp.sympify(u_expression)
+
+
+'''# Define symbols
+x1, x2, t = sp.symbols('x1 x2 t')
+c = 1
 
 # Constraints
-x1_min, x1_max = -3, 3
+x1_min, x1_max = -2, 2
 x2_min, x2_max = -3, 3
 t_min, t_max = 0, 1
 
@@ -31,7 +75,7 @@ def L(y):
 
 # Define u(s)
 u = sp.simplify(L(y))
-print("function u:", u)
+print("function u:", u)'''
 
 
 
@@ -92,7 +136,7 @@ s_net = np.array([[x1, x2, t] for x1 in x1_vals for x2 in x2_vals for t in t_val
 
 # Points for u, u_0 and u_g
 # Define index points
-num_discretization = 10
+num_discretization = 8
 x1_points = np.linspace(x1_min, x1_max, num_discretization)
 x2_points = np.linspace(x2_min, x2_max, num_discretization)
 t_points = np.linspace(t_min, t_max, num_discretization)
@@ -193,6 +237,7 @@ boundary_operators = [
 def G_function(s):
     x1, x2, t = s
     r = np.sqrt(x1**2 + x2**2)
+    c = 1
     sqrt_term = c**2 * t**2 - r**2
     if sqrt_term <= 0:
         return 0
@@ -324,7 +369,7 @@ x1_flat = x1_grid.flatten()
 x2_flat = x2_grid.flatten()
 
 # Initial time value
-t_fixed = 0.24
+t_fixed = 0.8
 original_function_flat = [y_s([x1, x2, t_fixed]) for x1, x2 in zip(x1_flat, x2_flat)]
 found_solution_flat = [y_total([x1, x2, t_fixed]) for x1, x2 in zip(x1_flat, x2_flat)]
 
