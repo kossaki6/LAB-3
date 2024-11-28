@@ -20,10 +20,10 @@ class EquationApp:
         self.root.option_add("*Font", default_font)
 
         # Завантаження зображень формул
-        self.formula1_image = ImageTk.PhotoImage(Image.open("formula1.png"))
-        self.formula2_image = ImageTk.PhotoImage(Image.open("formula2.png"))
-        self.L1_image = ImageTk.PhotoImage(Image.open("L1.png"))
-        self.L2_image = ImageTk.PhotoImage(Image.open("L2.png"))
+        self.formula1_image = ImageTk.PhotoImage(Image.open("assets/formula1.png"))
+        self.formula2_image = ImageTk.PhotoImage(Image.open("assets/formula2.png"))
+        self.L1_image = ImageTk.PhotoImage(Image.open("assets/L1.png"))
+        self.L2_image = ImageTk.PhotoImage(Image.open("assets/L2.png"))
 
         # Параметри
         self.T = 10  # Кінцеве значення для t
@@ -484,12 +484,12 @@ class EquationApp:
             'points': self.points
         }
 
-        with open('equations.json', 'w') as f:
+        with open('assets/equations.json', 'w') as f:
             json.dump(data, f)
 
     def load_from_json(self):
         try:
-            with open('equations.json', 'r') as f:
+            with open('assets/equations.json', 'r') as f:
                 data = json.load(f)
 
             self.x1_constraints_entry.insert(0, data.get('x1_constraints', ''))
