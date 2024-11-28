@@ -1,0 +1,40 @@
+{
+	"x1_constraints": "-2 2",
+	"x2_constraints": "-3 3",
+	"T": "1",
+	"y(s)": "t**2*x1 + x2**2",
+	"u(s)": "2*x1 - 2",
+	"u_discretization_points": "8",
+	"linspace_step": "0.5",
+	
+	"initial_conds": [
+	  {
+		"differential": "delta_t_1",
+		"expression": "0",
+		"t": "0"
+	  },
+	  {
+		"differential": "delta_t_1",
+		"expression": "x2**2",
+		"t": "0"
+	  }
+	],
+	
+	"boundary_conds": [
+	  {
+		"differential": "1",
+		"expression": "-2*t**2 + x2**2",
+		"x1":"-2"
+	  },
+	  {
+		"differential": "delta_x1_1",
+		"expression": "t**2",
+		"x1":"-2"
+	  },
+	  {
+		"differential": "delta_x2_1",
+		"expression": "6",
+		"x2":"3"
+	  }
+	]
+  }
