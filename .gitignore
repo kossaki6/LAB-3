@@ -1,3 +1,14 @@
-Lab 3/equations.json
-.idea
-venv
+# Ignore virtual environment
+.venv/
+
+# Ignore the .gitignore file itself
+.gitignore
+
+# Ignore specific files
+!Formulae.kra
+
+# Other project-specific files to ignore
+*.pyc
+__pycache__/
+*.log
+*.tmp
