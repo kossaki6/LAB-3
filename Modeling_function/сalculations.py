@@ -80,9 +80,9 @@ print("function u:", u)'''
 
 
 #################################################################
-                    #BOUNDARY CONDITIONS DEFINITION#
+                        #BOUNDARY CONDITIONS#
 #################################################################
-# Operators for boundary conditions
+'''# Operators for boundary conditions
 def L_0_1(y):
     # Represents ∂y/∂t
     return sp.Derivative(y, t)
@@ -98,27 +98,26 @@ def L_g_2(y):
     return sp.Derivative(y, x1)
 def L_g_3(y):
     # Represents ∂y/∂x2
-    return sp.Derivative(y, x2)
+    return sp.Derivative(y, x2)'''
 
 # Define Y_0_g(x)
-def Y_0_g(s):
-    x1_val, x2_val, t_val = s
-    term1 = L_0_1(y).subs({x1: x1_val, x2: x2_val, t:0})  # y at t = 0
-    term1 = term1.doit() 
-    term2 = L_0_2(y).subs({x1: x1_val, x2: x2_val, t:0})  # y/∂t at t = 0
-    term2 = term2.doit() 
+def Y_0_g():
+    # Parse initial conditions
+    initial_terms = []
+    for cond in data['initial_conds']:
+        expression = sp.sympify(cond['expression'])  # Convert string to symbolic expression
+        initial_terms.append(expression)
 
-    term3 = L_g_1(y).subs({x1:-2, x2: x2_val, t: t_val})  # y at x1 = -2
-    term3 = term3.doit() 
-    term4 = L_g_2(y).subs({x1:2, x2: x2_val, t: t_val})  # ∂y/∂x1 at x1 = 2
-    term4 = term4.doit() 
-    term5 = L_g_3(y).subs({x1: x1_val, x2:3, t: t_val})  # ∂y/∂x2 at x2 = 3
-    term5 = term5.doit() 
+    # Parse boundary conditions
+    boundary_terms = []
+    for cond in data['boundary_conds']:
+        expression = sp.sympify(cond['expression'])
+        boundary_terms.append(expression)
 
-    # Combine results
-    return [term1, term2, term3, term4, term5]
+    # Combine all terms
+    return initial_terms + boundary_terms
 
-print(f"Y_0_g:{Y_0_g([x1, x2,t])}")
+print(f"Y_0_g:{Y_0_g()}")
 
 
 
@@ -196,7 +195,7 @@ def y_s(s):
 # Redefine Y_0_g_s
 def Y_0_g_s(i, s):
     x1_val, x2_val, t_val = s
-    return Y_0_g(s)[i].subs({x1: x1_val, x2: x2_val, t:t_val})
+    return Y_0_g()[i].subs({x1: x1_val, x2: x2_val, t:t_val})
 
 # Operators for boundary conditions
 def L_0_1_s(y, s):
