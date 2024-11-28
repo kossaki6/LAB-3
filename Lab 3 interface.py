@@ -6,6 +6,7 @@ import sympy as sp
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
+from сalculations import Calculations
 
 class EquationApp:
     def __init__(self, root):
@@ -542,7 +543,14 @@ class EquationApp:
         self.canvas_points.draw()
 
     def solve(self):
-        pass
+        figure = plt.figure()
+        Calculations(figure)
+
+        answer_window = tk.Toplevel(self.root)
+        answer_window.title("Розв'язок")
+
+        canvas = FigureCanvasTkAgg(figure, master=answer_window)
+        canvas.get_tk_widget().grid(row=0, column=0)
 
     def on_closing(self):
         # Завершення роботи програми
